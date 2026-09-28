@@ -1,8 +1,8 @@
 /*
  */
 
-#include "asciimation8_100.h"
-#include "delays_100.h"
+#include "asciimation8_50.h"
+#include "delays_50.h"
 #include "nitram5x5_mini.h"
 #include <cmoc.h>
 #include <mo5_video.h>
@@ -29,7 +29,8 @@ int FRAME_PIXEL_HEIGHT = FRAME_CHAR_HEIGHT * THEIGHT;
 
 int DOUBLE_BUFFER_PIXEL_HEIGHT = FRAME_CHAR_HEIGHT * GHEIGHT;
 // DOUBLE_BUFFER_PIXEL_HEIGHT * SCREEN_WIDTH_BYTES; // 3120
-#define DOUBLE_BUFFER_SIZE 40; //3120
+//3120
+#define DOUBLE_BUFFER_SIZE 40
 
 static unsigned char DOUBLE_BUFFER[DOUBLE_BUFFER_SIZE];
 unsigned char* DRAW_TARGET = VRAM;
@@ -139,6 +140,24 @@ unsigned char GET_NEXT_VALUE() { return *fptr++; }
 #define FOREGROUND 0xff
 #define BACKGROUND 0x00
 
+char* format_number(unsigned int num) {
+    static char buffer[6];
+    int i = 5; // Start at the last index
+    
+    buffer[i--] = '\0'; // Null-terminate the end
+
+    if (num == 0) {
+        buffer[i--] = '0';
+    } else {
+        while (num > 0) {
+            buffer[i--] = (char)(num % 10) + '0';
+            num /= 10;
+        }
+    }
+    // Return the exact address where the digits actually begin
+    return &buffer[i + 1]; 
+}
+
 
 void init_all() {
   for (unsigned int i = 0 ; i < 256; i++) {
@@ -168,7 +187,8 @@ void init_all() {
 #define FPS 25
 #define FRAME_DURATION 40 
 void WAIT_DELAY(unsigned int frames) {
-  int milis = frames * FRAME_DURATION;
+  // TODO
+  int millis = frames * FRAME_DURATION;
 }
 
 int main(void) {
@@ -179,20 +199,23 @@ int main(void) {
   int curf = 0;
   unsigned char c = GET_NEXT_VALUE();
   while (1) {
-    mo5_wait_vbl();
     if (c == '\n') {
       curx = FRAME_START_X;
       cury += GHEIGHT + ADVANCEY;
       if (curl == FRAME_CHAR_HEIGHT - 1) {
         cury = FRAME_START_Y;
         curl = 0;       
-        WAIT_DELAY
-        (delays[curf]);
+         fill_band(BACKGROUND, THEIGHT, THEIGHT * 2);
+        drawstringCenteredH("frame", 5, THEIGHT);
+        drawstringCenteredH(format_number(curf), -1, THEIGHT * 2);
+        WAIT_DELAY(delays[curf]);
+        //fill_band(BACKGROUND, cury, GHEIGHT);
+     mo5_wait_vbl();
         curf += 1;
-        fill_band(BACKGROUND, FRAME_START_Y, FRAME_PIXEL_HEIGHT);
-      } else {
+        } else {
         curl += 1;
       }
+      fill_band(BACKGROUND, cury, GHEIGHT);
     } else {
       int rep = 1;
       // all rle opcodes
