@@ -1,8 +1,8 @@
 /*
  */
 
-#include "asciimation8_150.h"
-#include "delays_150.h"
+#include "asciimation8_100.h"
+#include "delays_100.h"
 #include "nitram5x5_mini.h"
 #include <cmoc.h>
 #include <mo5_video.h>
@@ -29,7 +29,7 @@ int FRAME_PIXEL_HEIGHT = FRAME_CHAR_HEIGHT * THEIGHT;
 
 int DOUBLE_BUFFER_PIXEL_HEIGHT = FRAME_CHAR_HEIGHT * GHEIGHT;
 // DOUBLE_BUFFER_PIXEL_HEIGHT * SCREEN_WIDTH_BYTES; // 3120
-#define DOUBLE_BUFFER_SIZE 3120
+#define DOUBLE_BUFFER_SIZE 40; //3120
 
 static unsigned char DOUBLE_BUFFER[DOUBLE_BUFFER_SIZE];
 unsigned char* DRAW_TARGET = VRAM;
@@ -43,8 +43,8 @@ void set_vram_target() {
 }
 
 void set_double_buffer_target() { 
-  DRAW_TARGET = DOUBLE_BUFFER;
-  DRAW_TARGET_PIXEL_HEIGHT = DOUBLE_BUFFER_PIXEL_HEIGHT;
+ // DRAW_TARGET = DOUBLE_BUFFER;
+  //RAW_TARGET_PIXEL_HEIGHT = DOUBLE_BUFFER_PIXEL_HEIGHT;
 }
 
 void drawPoint(int x, int y) {
