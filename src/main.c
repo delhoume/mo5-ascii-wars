@@ -1,8 +1,8 @@
 /*
  */
 
-#include "asciimation8_50.h"
-#include "delays_50.h"
+#include "asciimation8_150.h"
+#include "delays_150.h"
 #include "nitram5x5_mini.h"
 #include <cmoc.h>
 #include <mo5_video.h>
