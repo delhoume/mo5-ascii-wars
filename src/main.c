@@ -1,59 +1,65 @@
 /*
- * MIT License
- *
- * Copyright (c == ' ')ry Le Got
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRAiNTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
  */
 
 #include "asciimation8_50.h"
 #include "delays_50.h"
 #include "nitram5x5_mini.h"
 #include <cmoc.h>
-#include <mo5_defs.h>
 #include <mo5_video.h>
+#include <mo5_audio.h>
 
-#define WIDTH 320
-#define HEIGHT 200
-#define BYTEWIDTH 40
-#define GWIDTH 5
+ #define SCREEN_PIXEL_WIDTH 320
+  #define SCREEN_PIXEL_HEIGHT 200
+ #define GWIDTH 5
 #define ADVANCEX 1
-#define GHEIGH
-#define GWIDTH 5
-#define ADVANCEY 1
+ #define GHEIGHT 5
+ #define ADVANCEY 1
 
-G WIDTH define ADVANCECEY 
-#definmwedefinRTHEJBTG#§§z
+ // = GWIDTH + ADVANCEX;
+#define TWIDTH 6
+#define THEIGHT 6
+
+#define FRAME_CHAR_WIDTH 67
+#define FRAME_CHAR_HEIGHT 13
+int FRAME_PIXEL_WIDTH = FRAME_CHAR_WIDTH * TWIDTH;
+int FRAME_PIXEL_HEIGHT = FRAME_CHAR_HEIGHT * THEIGHT;
+ int BAND_PIXEL_HEIGHT = (SCREEN_PIXEL_HEIGHT - FRAME_PIXEL_HEIGHT) / 2;
+ int FRAME_START_Y = (SCREEN_PIXEL_HEIGHT - FRAME_PIXEL_HEIGHT) / 2;
+ int FRAME_START_X = (SCREEN_PIXEL_WIDTH - FRAME_PIXEL_WIDTH)  / 2;
+
+int DOUBLE_BUFFER_PIXEL_HEIGHT = FRAME_CHAR_HEIGHT * GHEIGHT;
+// DOUBLE_BUFFER_PIXEL_HEIGHT * SCREEN_WIDTH_BYTES; // 3120
+#define DOUBLE_BUFFER_SIZE 3120
+
+static unsigned char DOUBLE_BUFFER[DOUBLE_BUFFER_SIZE];
+unsigned char* DRAW_TARGET = VRAM;
+unsigned int DRAW_TARGET_PIXEL_HEIGHT = SCREEN_PIXEL_HEIGHT;
+unsigned int DRAW_TARGET_BYTE_WIDTH = SCREEN_WIDTH_BYTES;
+unsigned int DRAW_TARGET_PIXEL_WIDTH = SCREEN_PIXEL_WIDTH;
+
+void set_vram_target() { 
+  DRAW_TARGET = VRAM; 
+  DRAW_TARGET_PIXEL_HEIGHT = SCREEN_PIXEL_HEIGHT;
+}
+
+void set_double_buffer_target() { 
+  DRAW_TARGET = DOUBLE_BUFFER;
+  DRAW_TARGET_PIXEL_HEIGHT = DOUBLE_BUFFER_PIXEL_HEIGHT;
+}
+
 void drawPoint(int x, int y) {
-  if (x < 0 || x >= WIDTH || y < 0 || y > HEIGHT)
+  if (x < 0 || x > DRAW_TARGET_PIXEL_WIDTH || y < 0 || y > DRAW_TARGET_PIXEL_HEIGHT)
     return;
   int xstart = x / 8;
   int xoffset = x % 8;
-  unsigned char *dst = VRAM + y * BYTES_WIDTH + xstart;
-  *dst |= (0x01 << (7 - xoffset));
+  unsigned char *dst = DRAW_TARGET + y * DRAW_TARGET_BYTE_WIDTH + xstart;
+  *dst |= ((unsigned char)0x01 << (7 - xoffset));
 }
 
-int drawChar(int x, int y, int c)) {
-  if (c == ' ')
-    return TWIDTH;
+int drawChar(int x, int y, int c) {
+  //if (c == ' ') return GWIDTH;
 
-  const unsigned char *src = nitramfont5 + c *  GHEIGHT;
+ unsigned char *src = nitramfont5 + c *  GHEIGHT;
   for (int row = 0; row < GHEIGHT; row++, src++) {
      unsigned char charline = *src;
     for (int col = 0; col < GWIDTH; col++) {
@@ -64,73 +70,126 @@ int drawChar(int x, int y, int c)) {
   }
   return GWIDTH;
 }
-
-void drawString(const char *str, int x, int y) {
-  unsigned char c;
-  while ((c = *str++) != 0) {
-    x += drawChar(x, y, c) + ADVANCEX;
-  }
-  return x - sx;#define GHEIGHT 5
-
+// Reverses the bits of a single byte (MSB <-> LSB)
+unsigned char reverse_byte_bits(unsigned char b) {
+  b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+  b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+  b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+  return b;
 }
 
-int drawstringCenteredH(const char *str, int len) {
+unsigned char reversed[128];
+
+int drawCharOptimised(int x, int y, int c) {
+  // not viswible at all
+  if ( /* c == ' '|| */ x < -GWIDTH || x > DRAW_TARGET_PIXEL_WIDTH)
+    return GWIDTH;
+  
+    // partially visible
+  if (x < GWIDTH  || x >  (DRAW_TARGET_PIXEL_WIDTH - GWIDTH))
+    return drawChar(x, y, c);
+
+   unsigned char *src = nitramfont5 + c * GHEIGHT;
+  unsigned char offset = (unsigned char)(x % 8);
+  unsigned char *dst = VRAM + y * SCREEN_WIDTH_BYTES + x / 8;
+  unsigned char mask =  ( unsigned char)((1 << GWIDTH) - 1);
+
+  for (int row = 0; row < GHEIGHT; row++) {
+     unsigned char glyph = reversed[src[row] & mask];
+    dst[0] |= (unsigned char)(glyph >>  offset);
+    if (offset != 0)
+       dst[1] |= (unsigned char)(glyph << (8 - offset));
+    dst += SCREEN_WIDTH_BYTES;
+  }
+  return GWIDTH;
+}
+
+int drawString(const char *str, int x, int y) {
+  unsigned int sx = x;
+  unsigned char c;
+  while ((c = *str++) != 0) {
+  x  += drawCharOptimised(x, y, c) + ADVANCEX;
+  }
+  return x-sx;
+}
+
+int drawstringCenteredH(const char *str, int len, int y) {
   if (len == -1)
     len = strlen(str);
-  int x = (WIDTH - ((GWIDTH + ADVANCEX) * len)) / 2;
+  int x = (DRAW_TARGET_PIXEL_WIDTH - ((GWIDTH + ADVANCEX) * len)) / 2;
   return drawString(str, x, y);
 }
 
+void set_color_mode() { *PRC &= ~0x01; }
+void set_form_mode() { *PRC |=  0x01; } 
 
-void set_color_mode() {}
-void set_form_mode() {}
-void fill_band(unsigned char value, int x, int y) {}
+// no checksfor speed
+void fill_band(unsigned char value, int y, unsigned int height) {
+   int nbytes = (height) * DRAW_TARGET_BYTE_WIDTH; 
+  unsigned char* dst = DRAW_TARGET + y * DRAW_TARGET_BYTE_WIDTH;
+  while(nbytes--) *dst++ = value;
+}
 
-#define FHEIGHT 68
-#define FSTARTY = 61
-#define FSTARTX = -40
 
 static unsigned char *fptr;
 void RESET_INPUT() { fptr = asciimation8_50; }
 
 unsigned char GET_NEXT_VALUE() { return *fptr++; }
 
+#define FOREGROUND 0xff
+#define BACKGROUND 0x00
+
+
 void init_all() {
+  for (unsigned int i = 0 ; i < 256; i++) {
+    reversed[i] = reverse_byte_bits((unsigned char)i);
+  }
+  mo5_mute_beep();
+  mo5_wait_vbl();
   set_color_mode();
-  fill_band(COLOR(C_BLACK, C_GREEN), 0, FSTARTY);
-  fill_band(COLOR(C_BLACK, C_WHITE), FSTARTY, FHEIGHT);
-  fill_band(COLOR(C_BLACK, C_GREEN), FSTARTY + FHEIGHT, FSTARTY);
+  set_vram_target();
+  fill_band(COLOR(C_BLACK, C_GREEN), 0, BAND_PIXEL_HEIGHT);
+  fill_band(COLOR(C_BLACK, C_WHITE), BAND_PIXEL_HEIGHT, FRAME_PIXEL_HEIGHT);
+  fill_band(COLOR(C_BLACK, C_GREEN),  BAND_PIXEL_HEIGHT + FRAME_PIXEL_HEIGHT, BAND_PIXEL_HEIGHT);
   // we are only changing form from here
-  //  fixed comtents
+  //  fixed contents
   set_form_mode();
-  fill_band(C_BLACK, 0, HEIGHT);
-  // we are onlbandheighty changing form from here
-  drawstringCenteredH("ASCII Wars", -1, (-GHEIGHT) / 
+  // clear all
+  fill_band(BACKGROUND, 0, SCREEN_PIXEL_HEIGHT);
+  // we are only changing form from here
+  drawstringCenteredH("ASCII Wars", -1, (BAND_PIXEL_HEIGHT - GHEIGHT) / 2);
   drawstringCenteredH("Animation: Simon Jensen | Code: Frederic Delhoume", -1,
-                      HEIGHT - (FSTARTY / 2) - GHEIGHT);
+                      SCREEN_PIXEL_HEIGHT - (BAND_PIXEL_HEIGHT / 2) - GHEIGHT);
   drawstringCenteredH("  www.asciimation.co.nz | github.com/delhoume    ", -1,
-                      HEIGHT - (FSTARTY / 2) + GHEIGHT);
+                      SCREEN_PIXEL_HEIGHT - (BAND_PIXEL_HEIGHT / 2) + GHEIGHT);
   RESET_INPUT();
 }
 
-#define FRAME_CHAR_HEIGHT 12
+#define FPS 25
+#define FRAME_DURATION 40 
+void WAIT_DELAY(unsigned int frames) {
+  int milis = frames * FRAME_DURATION;
+}
+
 int main(void) {
   init_all();
-  int curx = FSTARTX;
-  int cury = FSTARTY  ;
+  int curx = FRAME_START_X;
+  int cury = FRAME_START_Y;
   int curl = 0;
   int curf = 0;
   unsigned char c = GET_NEXT_VALUE();
   while (1) {
+    mo5_wait_vbl();
     if (c == '\n') {
-      curx = FSTARTX;
-      cury += THEIGHT;
-      if (curl == FRAME_CHAR_HEIGHT) {
-        cury = FSTARTY;
-        curl = 0;
+      curx = FRAME_START_X;
+      cury += GHEIGHT + ADVANCEY;
+      if (curl == FRAME_CHAR_HEIGHT - 1) {
+        cury = FRAME_START_Y;
+        curl = 0;       
+        WAIT_DELAY
+        (delays[curf]);
         curf += 1;
-        WAIT_DELAY(delays[curf]);
-        fill_band(C_BLACK, FSTARTY.FHEIGHT);
+        fill_band(BACKGROUND, FRAME_START_Y, FRAME_PIXEL_HEIGHT);
       } else {
         curl += 1;
       }
@@ -142,7 +201,7 @@ int main(void) {
         rep = GET_NEXT_VALUE();
         c = GET_NEXT_VALUE();
       } else if (c >= 4 && c <= 8) {
-        static char val[5] = "_\\/| ";
+        static char val[5] = { 95, 92, 45, 124, 32 };
         rep = 2;
         c = val[8 - c];
       } else if (c == 9) {
@@ -153,13 +212,13 @@ int main(void) {
         c = ' ';
       }
       for (int r = 0; r < rep; ++r) {
-        x += drawChar(x, y, c, font) + ADVANCEX;
+        curx += drawCharOptimised(curx, cury, c) + ADVANCEX;
       }
     }
     c = GET_NEXT_VALUE();
     if (c == 0) {
-      curx = FSTARTX;
-      cury = FSTARTY;
+      curx = FRAME_START_X;
+      cury = FRAME_START_Y;
       curf = 0;
       curl = 0;
       RESET_INPUT();
