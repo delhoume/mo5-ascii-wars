@@ -82,7 +82,7 @@ unsigned char reverse_byte_bits(unsigned char b) {
 unsigned char reversed[128];
 
 int drawCharOptimised(int x, int y, int c) {
-  // not viswible at all
+  // not visle at all
   if ( /* c == ' '|| */ x < -GWIDTH || x > DRAW_TARGET_PIXEL_WIDTH)
     return GWIDTH;
   
@@ -160,10 +160,13 @@ char* format_number(unsigned int num) {
 
 
 void init_all() {
+  *PRC = 0x00;
+  *VIDEO_REG |= 0x01;
+// mute_beep
+  *((unsigned char*)0xA7C1) = 0x00;
   for (unsigned int i = 0 ; i < 256; i++) {
     reversed[i] = reverse_byte_bits((unsigned char)i);
   }
-  mo5_mute_beep();
   mo5_wait_vbl();
   set_color_mode();
   set_vram_target();
@@ -187,8 +190,10 @@ void init_all() {
 #define FPS 25
 #define FRAME_DURATION 40 
 void WAIT_DELAY(unsigned int frames) {
-  // TODO
-  int millis = frames * FRAME_DURATION;
+  while (frames--)
+  {
+    mo5_wait_vbl();
+  }
 }
 
 int main(void) {
