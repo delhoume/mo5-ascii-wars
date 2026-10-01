@@ -93,16 +93,49 @@ unsigned char reverse_byte_bits(unsigned char b) {
   return b;
 }
 
+
+
 unsigned char reversed[128];
 
 int drawCharOptimised(int x, int y, int c) {
   // not visible at all
   // if ( c == ' '|| x < -GWIDTH || x > DRAW_TARGET_PIXEL_WIDTH)
-  //   return GWIDTH;
+  //  return GWIDTH;
 
-  // partially visible, discard
-  if (x < GWIDTH || x > (DRAW_TARGET_PIXEL_WIDTH - GWIDTH))
-    return GWIDTH; // drawChar(x, y, c);
+    if (c == '.') { // 46 period
+      drawPoint(x + 3, y + 4);
+      return GWIDTH;
+    } else if (c == '-') { // 45 minus
+      drawPoint(x + 1, y + 2);
+      drawPoint(x + 2, y + 2);
+      drawPoint(x + 3, y + 2);
+      return GWIDTH;
+    } else if (c == ':') { // 58 colon  
+      drawPoint(x + 2, y + 1);
+      drawPoint(x + 2, y + 3);
+      return GWIDTH;
+     } else if (c == ',') { // 44 comma
+      drawPoint(x + 2, y + 3);
+      drawPoint(x + 3, y + 4);
+      return GWIDTH;
+    } else if (c == ';') { // 39 singlequote
+      drawPoint(x + 1, y);
+      drawPoint(x + 2, y + 2);
+      return GWIDTH;
+    } else if (c == '|') { // 124 pipe
+      drawPoint(x + 2, y);
+      drawPoint(x + 2, y + 1);
+      drawPoint(x + 2, y + 2);
+      drawPoint(x + 2, y + 4);
+      return GWIDTH;
+    }
+
+      // partially visible, discard
+  if (x < GWIDTH || x > (DRAW_TARGET_PIXEL_WIDTH - GWIDTH)) {
+    drawChar(x, y, c);
+     return GWIDTH;
+  }
+
 
   unsigned char *src = nitramfont5 + c * GHEIGHT;
   unsigned char offset = (unsigned char)(x % 8);
@@ -118,6 +151,8 @@ int drawCharOptimised(int x, int y, int c) {
   }
   return GWIDTH;
 }
+
+
 
 int drawString(const char *str, int x, int y) {
   unsigned int sx = x;
@@ -218,10 +253,10 @@ unsigned int decode(unsigned char c, unsigned char *ptr) {
     return 2;
   } else if (c == 9) {
     // repeat = 3;
-    c = ' ';
-    ptr[0] = c;
-    ptr[1] = c;
-    ptr[2] = c;
+    // c = ' ';
+    ptr[0] = ' ';
+    ptr[1] = ' ';
+    ptr[2] = ' ';
     return 3;
   } else if (c >= 11 && c <= 23) {
     unsigned char repeat = c - 7;
@@ -262,22 +297,19 @@ int get_next_frame() {
 void init_all() {
   *PRC = 0x00;
   *VIDEO_REG |= 0x01;
-  // mute_bp
+  // mute_b eep
   *((unsigned char *)0xA7C1) = 0x00;
   unsigned int i;
   for (i = 0; i < 256; i++) {
     reversed[i] = reverse_byte_bits((unsigned char)i);
   }
-
-  mo5_wait_vbl();
-  set_vram_target();
   set_color_mode();
 
   fill_band(COLOR(C_BLACK, C_GREEN), 0, BAND_PIXEL_HEIGHT);
   fill_band(COLOR(C_BLACK, C_WHITE), BAND_PIXEL_HEIGHT, FRAME_PIXEL_HEIGHT);
   fill_band(COLOR(C_BLACK, C_GREEN), BAND_PIXEL_HEIGHT + FRAME_PIXEL_HEIGHT,
             BAND_PIXEL_HEIGHT);
-  // we are only changing form from here
+  set_vram_target();
   //  fixed contents
   set_form_mode();
   // clear all
