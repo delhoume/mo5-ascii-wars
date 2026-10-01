@@ -3,12 +3,17 @@
  *
  */
 
+ // cmoc optimized functions
+
+ void *memcpy(void *destination, const void *source, unsigned int count);
+void *memset(void *destination, int value, unsigned int count);
+
+
 typedef unsigned char uint8_t;
 #include "asciimation8_75.h"
 #include "delays_75.h"
 
 #include "nitram5x5_mini.h"
-#include <cmoc.h>
 #include <mo5_audio.h>
 #include <mo5_video.h>
 
@@ -50,18 +55,6 @@ void set_double_buffer_target() {
   DRAW_TARGET_PIXEL_HEIGHT = DOUBLE_BUFFER_PIXEL_HEIGHT;
 }
 
-void copy_to_front() {
-  for (unsigned int row = 0; row < DOUBLE_BUFFER_PIXEL_HEIGHT; row++) {
-    unsigned char *src =
-        (unsigned char *)(DOUBLE_BUFFER + row * DRAW_TARGET_BYTE_WIDTH);
-    unsigned char *dst =
-        (unsigned char *)(VRAM + (FRAME_START_Y + row) * SCREEN_WIDTH_BYTES);
-    for (unsigned int col = 0; col < DRAW_TARGET_BYTE_WIDTH; col++) {
-      dst[col] = src[col];
-    }
-  }
-}
-
 void drawPoint(int x, int y) {
   if (x < 0 || x > DRAW_TARGET_PIXEL_WIDTH || y < 0 ||
       y > DRAW_TARGET_PIXEL_HEIGHT)
@@ -93,9 +86,7 @@ unsigned char reverse_byte_bits(unsigned char b) {
   return b;
 }
 
-
-
-unsigned char reversed[128];
+unsigned char reversed[256];
 
 int drawCharOptimised(int x, int y, int c) {
   // not visible at all
@@ -182,10 +173,9 @@ void set_form_mode() { *PRC |= 0x01; }
 
 // no checksfor speed
 void fill_band(unsigned char value, int y, unsigned int height) {
-  int nbytes = (height)*DRAW_TARGET_BYTE_WIDTH;
+  int nbytes = height*DRAW_TARGET_BYTE_WIDTH;
   unsigned char *dst = DRAW_TARGET + y * DRAW_TARGET_BYTE_WIDTH;
-  while (nbytes--)
-    *dst++ = value;
+  memset(dst, value, nbytes);
 }
 
 // fillrectangle with nearest byte alignment, no checks for speed
@@ -201,9 +191,7 @@ void fill_rectangle_byte(unsigned char value, int x, int y, unsigned int width,
   for (int row = 0; row < height; row++) {
     unsigned char *dst =
         DRAW_TARGET + (y + row) * DRAW_TARGET_BYTE_WIDTH + x / 8;
-    for (int col = 0; col < bytewdith; col++) {
-      *dst++ = value;
-    }
+        memset(dst, value, bytewdith);
   }
 }
 
@@ -240,9 +228,7 @@ unsigned int decode(unsigned char c, unsigned char *ptr) {
   if (c == 3) {
     unsigned char repeat = GET_NEXT_VALUE();
     c = GET_NEXT_VALUE();
-    for (unsigned char r = 0; r < repeat; r++) {
-      ptr[r] = c;
-    }
+    memset(ptr, c, repeat);
     return repeat;
   } else if (c >= 4 && c <= 8) {
     static char val[5] = {95, 92, 45, 124, 32};
@@ -261,9 +247,7 @@ unsigned int decode(unsigned char c, unsigned char *ptr) {
   } else if (c >= 11 && c <= 23) {
     unsigned char repeat = c - 7;
     c = ' ';
-    for (unsigned char r = 0; r < repeat; r++) {
-      ptr[r] = c;
-    }
+    memset(ptr, c, repeat);
     return repeat;
   }
   ptr[0] = c;
@@ -346,7 +330,9 @@ int main(void) {
       // frame  content display
       drawString((const char *)FRAME, FRAME_START_X, 0);
       mo5_wait_vbl();
-     copy_to_front();
+    //  cmoc optimized function
+      memcpy((char *)VRAM + (FRAME_START_Y * SCREEN_WIDTH_BYTES), (const char *)DOUBLE_BUFFER, DOUBLE_BUFFER_SIZE);     
+      
        if (show_info) {
         set_vram_target();
         fill_rectangle_byte(BACKGROUND, 16, 10, TWIDTH * 10, GHEIGHT);
