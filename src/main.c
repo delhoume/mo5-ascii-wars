@@ -10,8 +10,8 @@ void *memset(void *destination, int value, unsigned int count);
 
 
 typedef unsigned char uint8_t;
-#include "asciimation8_75.h"
-#include "delays_75.h"
+#include "asciimation8_80.h"
+#include "delays_80.h"
 
 #include "nitram5x5_mini.h"
 #include <mo5_audio.h>
@@ -22,6 +22,7 @@ typedef unsigned char uint8_t;
 #define GWIDTH 5
 #define ADVANCEX 1
 #define GHEIGHT 5
+#define ADVANCEY 1
 
 // = GWIDTH + ADVANCEX;
 #define TWIDTH 6
@@ -78,20 +79,26 @@ int drawChar(int x, int y, int c) {
   }
   return GWIDTH;
 }
-// Reverses the bits of a single byte (MSB <-> LSB)
+//  Reverses the bits of a single byte (MSB <-> LSB)
 unsigned char reverse_byte_bits(unsigned char b) {
   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
   return b;
 }
-
 unsigned char reversed[256];
 
 int drawCharOptimised(int x, int y, int c) {
   // not visible at all
   // if ( c == ' '|| x < -GWIDTH || x > DRAW_TARGET_PIXEL_WIDTH)
   //  return GWIDTH;
+ 
+      // partially visible, discard
+  if (x < GWIDTH || x > (DRAW_TARGET_PIXEL_WIDTH - GWIDTH)) {
+///    drawChar(x, y, c);
+     return GWIDTH;
+  }
+
 
     if (c == '.') { // 46 period
       drawPoint(x + 3, y + 4);
@@ -109,25 +116,7 @@ int drawCharOptimised(int x, int y, int c) {
       drawPoint(x + 2, y + 3);
       drawPoint(x + 3, y + 4);
       return GWIDTH;
-    } else if (c == ';') { // 39 singlequote
-      drawPoint(x + 1, y);
-      drawPoint(x + 2, y + 2);
-      return GWIDTH;
-    } else if (c == '|') { // 124 pipe
-      drawPoint(x + 2, y);
-      drawPoint(x + 2, y + 1);
-      drawPoint(x + 2, y + 2);
-      drawPoint(x + 2, y + 4);
-      return GWIDTH;
-    }
-
-      // partially visible, discard
-  if (x < GWIDTH || x > (DRAW_TARGET_PIXEL_WIDTH - GWIDTH)) {
-    drawChar(x, y, c);
-     return GWIDTH;
-  }
-
-
+    } 
   unsigned char *src = nitramfont5 + c * GHEIGHT;
   unsigned char offset = (unsigned char)(x % 8);
   unsigned char *dst = DRAW_TARGET + y * SCREEN_WIDTH_BYTES + x / 8;
@@ -145,7 +134,7 @@ int drawCharOptimised(int x, int y, int c) {
 
 
 
-int drawString(const char *str, int x, int y) {
+int drawString(const unsigned char *str, int x, int y) {
   unsigned int sx = x;
   unsigned char c;
   while ((c = *str++) != 0) {
@@ -153,7 +142,7 @@ int drawString(const char *str, int x, int y) {
       x = sx;
       y += THEIGHT;
     } else if (c == ' ') {
-      x += GWIDTH + ADVANCEX; 
+      x += TWIDTH;  
     } else {
       x += drawCharOptimised(x, y, c) + ADVANCEX;
     }
@@ -161,10 +150,11 @@ int drawString(const char *str, int x, int y) {
   return x - sx;
 }
 
-int drawStringCenteredH(const char *str, int len, int y) {
+// not valid when we have a string with newlines
+int drawStringCenteredH(const unsigned char *str, int len, int y) {
   if (len == -1)
-    len = strlen(str);
-  int x = (DRAW_TARGET_PIXEL_WIDTH - ((GWIDTH + ADVANCEX) * len)) / 2;
+    len = strlen((const char*)str);
+  int x = (DRAW_TARGET_PIXEL_WIDTH - ((TWIDTH) * len)) / 2;
   return drawString(str, x, y);
 }
 
@@ -196,26 +186,22 @@ void fill_rectangle_byte(unsigned char value, int x, int y, unsigned int width,
 }
 
 static unsigned char *fptr;
-void RESET_INPUT() {
-  fptr = (unsigned char*)asciimation8;
+void RESET_INPUT() {fcn
+  fptr = (unsigned char*)asciimation8_80;
 }
 
 unsigned char GET_NEXT_VALUE() { return *fptr++; }
 
-#define FOREGROUND 0xff
+#define Fiv IOREGROUND 0xff
 #define BACKGROUND 0x00
-
-char *format_number(unsigned int num) {
-  static char buffer[6];
-  int i = 5; // Sfart at the last index
-
-  buffer[i--] = '\0'; // Null-terminate the end
-
-  if (num == 0) {
-    buffer[i--] = '0';
-  } else {
+unsigned char buffer[7];
+const unsigned char *format_number(unsigned int num) {
+  memset(buffer, '0', 5);
+  unsigned int i = 5; // Start at the last index
+  if (num==0) {
+  } else {  
     while (num > 0) {
-      buffer[i--] = (char)(num % 10) + '0';
+      buffer[i--] = ((unsigned char)(num % 10)) + '0';
       num /= 10;
     }
   }
@@ -268,7 +254,7 @@ int get_next_frame() {
     }
     unsigned int decoded = decode(c, ptr);
     clinelen += decoded;
-    ptr += decoded;
+    ptr += decoded;             
     if (c == '\n') {
       cline += 1;
       clinelen = 0;
@@ -284,9 +270,10 @@ void init_all() {
   // mute_b eep
   *((unsigned char *)0xA7C1) = 0x00;
   unsigned int i;
-  for (i = 0; i < 256; i++) {
+  for (i = 0; i < 128; i++) {
     reversed[i] = reverse_byte_bits((unsigned char)i);
   }
+
   set_color_mode();
 
   fill_band(COLOR(C_BLACK, C_GREEN), 0, BAND_PIXEL_HEIGHT);
@@ -299,10 +286,11 @@ void init_all() {
   // clear all
   fill_band(BACKGROUND, 0, SCREEN_PIXEL_HEIGHT);
   // we are only changing form from here
-  drawStringCenteredH("ASCII Wars", 10, (BAND_PIXEL_HEIGHT - GHEIGHT) / 2);
-  drawStringCenteredH("Animation: Simon Jensen | Code: Frederic Delhoume", 49,
+  mo5_wait_vbl();
+  drawStringCenteredH((const unsigned char*)"ASCII Wars", 10, (BAND_PIXEL_HEIGHT - GHEIGHT) / 2);
+  drawStringCenteredH((const unsigned char*)"Animation: Simon Jensen | Code: Frederic Delhoume", 49,
                       SCREEN_PIXEL_HEIGHT - (BAND_PIXEL_HEIGHT / 2) - GHEIGHT);
-  drawStringCenteredH("  www.asciimation.co.nz | github.com/delhoume    ", 49,
+  drawStringCenteredH((const unsigned char*)"  www.asciimation.co.nz | github.com/delhoume    ", 49,
                       SCREEN_PIXEL_HEIGHT - (BAND_PIXEL_HEIGHT / 2) + GHEIGHT);
   RESET_INPUT();
 }
@@ -326,26 +314,29 @@ int main(void) {
       set_double_buffer_target();
       for (int l = 0; l < FRAME_CHAR_HEIGHT; l++) {
         fill_band(BACKGROUND, l * THEIGHT, GHEIGHT);
+ 
       }
-      // frame  content display
-      drawString((const char *)FRAME, FRAME_START_X, 0);
+   // frame  content display
+      drawString((const unsigned char *)FRAME, FRAME_START_X, 0);
       mo5_wait_vbl();
     //  cmoc optimized function
       memcpy((char *)VRAM + (FRAME_START_Y * SCREEN_WIDTH_BYTES), (const char *)DOUBLE_BUFFER, DOUBLE_BUFFER_SIZE);     
       
        if (show_info) {
         set_vram_target();
-        fill_rectangle_byte(BACKGROUND, 16, 10, TWIDTH * 10, GHEIGHT);
-        int x = 16;
-        x += drawString("f:", x, 10);
-        x += drawString(format_number(curf + 1), x, 10);
-        x += drawString(" d:", x, 10);
-        x += drawString(format_number(delays[curf]), x, 10);
-      }
+        //fill_rectangle_byte(BACKGROUND, 16, 10, TWIDTH * 10, GHEIGHT);
+         fill_band(BACKGROUND, 10, GHEIGHT);
+         unsigned char buffer[32] = "F:       D:       ";
+           memcpy((buffer + 3), format_number(curf), 5);
+          memcpy((buffer + 12), format_number(delays[curf]), 5);
+         drawString((const unsigned char*)buffer, 16, 10);
+         
+       }
+
       // TODO
       //   WAIT_DELAY(delays[curf]);
       curf += 1;
     }
   }
   return 0;
-}
+} 
