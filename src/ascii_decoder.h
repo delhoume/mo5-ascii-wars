@@ -1,13 +1,14 @@
 #ifndef ASCII_DECODER_H
 #define ASCII_DECODER_H
 
+int drawCharOptimised(int x, int y, int c);
+int drawChar(int x, int y, int c);
+
 static const unsigned char *fptr;
 static const unsigned char *fend;
 static unsigned int value7_accumulator;
 static unsigned char value7_bits;
 static unsigned char input_value_bits;
-static unsigned char FRAME[FRAME_CHAR_HEIGHT][FRAME_CHAR_WIDTH + 1];
-static unsigned char LINELEN[FRAME_CHAR_HEIGHT];
 static unsigned char FRAME_DECODE_ERROR;
 
 static void RESET_INPUT(const unsigned char *input, unsigned int input_size,
@@ -86,41 +87,84 @@ static unsigned char decode(unsigned char c, unsigned char *ptr,
   return 1;
 }
 
+
+ static int draw_rle_opcode(int *x, int y, unsigned char op) {
+  switch (op) {
+    case 3: {
+      unsigned char repeat = GET_NEXT_VALUE();
+      unsigned char ch = GET_NEXT_VALUE();
+       if (ch == ' ') {
+       *x += (repeat * TWIDTH);
+  return 1;
+      }
+      for (unsigned char i = 0; i < repeat; i++)
+        *x += drawCharOptimised(*x, y, ch) + ADVANCEX;
+      return 1;
+    }
+
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8: {
+      static const unsigned char val[5] = {95, 92, 45, 124, 32};
+      unsigned char ch = val[8 - op];
+      *x += drawCharOptimised(*x, y, ch) + ADVANCEX;
+      *x += drawCharOptimised(*x, y, ch) + ADVANCEX;
+      return 1;
+    }
+
+    case 9: {
+      *x +=  3 * TWIDTH;
+      return 1;
+    }
+
+    default:
+      if (op >= 11 && op <= 23) {
+        unsigned char repeat = op - 7;
+        *x += repeat * TWIDTH;
+        return 1;
+      }
+
+      if (op == '\n')
+        return 1;
+
+      if (op == 0)
+        return 1;
+
+      *x += drawCharOptimised(*x, y, op) + ADVANCEX;
+      return 1;
+  }
+}
+
 static int get_next_frame(void) {
   if (FRAME_DECODE_ERROR)
     return 0;
 
-  unsigned char row = 0;
-  unsigned char line_length = 0;
-
-  while (row < FRAME_CHAR_HEIGHT) {
-    unsigned char c = GET_NEXT_VALUE();
+  int x = FRAME_START_X;
+  int y = FRAME_START_Y;
+  unsigned char newline_count = 0;
+  while (1) {
+    unsigned char op = GET_NEXT_VALUE();
     if (FRAME_DECODE_ERROR)
       return 0;
-    if (c == 0) {
-      if (row != 0 || line_length != 0)
-        FRAME_DECODE_ERROR = 1;
+
+    if (op == 0)
+      return 1;
+
+    if (op == '\n') {
+      x = FRAME_START_X;
+      y += THEIGHT;
+      newline_count++; 
+      if (newline_count == FRAME_CHAR_HEIGHT)
+        return 1;
+  } else {
+  int status = draw_rle_opcode(&x, y, op);
+    if (status == 0) {
+      FRAME_DECODE_ERROR = 1;
       return 0;
     }
-
-    if (c == '\n') {
-      FRAME[row][line_length] = 0;
-      LINELEN[row] = line_length;
-      row++;
-      line_length = 0;
-    } else {
-      unsigned char decoded =
-          decode(c, FRAME[row] + line_length,
-                 FRAME_CHAR_WIDTH - line_length);
-      if (decoded == 0 || FRAME_DECODE_ERROR) {
-        FRAME_DECODE_ERROR = 1;
-        return 0;
-      }
-      line_length += decoded;
-    }
   }
-
-  return 1;
 }
-
+}
 #endif

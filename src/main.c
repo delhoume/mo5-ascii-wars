@@ -319,7 +319,7 @@ void init_all() {
   //  fixed contents
   set_form_mode();
   // clear all
-  clearTarget(BACKGROUND);
+  clearTarget();
   // we are only changing form from here
 
     drawStringCenteredH((const unsigned char*)"ASCII Wars", 10, (BAND_PIXEL_HEIGHT - GHEIGHT) / 2);
@@ -343,33 +343,28 @@ int main(void) {
   int curf = 0;
 
   while (1) {
-    if (get_next_frame() == 0) {
+    setFrameTarget();
+   clearTarget();
+    
+       if (get_next_frame() == 0) {
       if (FRAME_DECODE_ERROR)
-        while (1) {
-        }
-      RESET_INPUT(asciimation7, sizeof(asciimation7), 7);
+       RESET_INPUT(asciimation7, sizeof(asciimation7), 7);
       curf = 0;
-    } else {
-      if (show_frames) {
-        setText10Target();
-        clearTarget();
-        drawString((const unsigned char*)format_number(curf), 8, 10);
-      }
-
-      setFrameTarget();
-      int ypos = FRAME_START_Y;
-      for (unsigned char line = 0; line < FRAME_CHAR_HEIGHT; line++) {
-        fillBand(BACKGROUND, ypos, GHEIGHT);
-        drawString(FRAME[line], FRAME_START_X, ypos);
-        ypos += THEIGHT;
-      }
-      my_wait_vbl();
-      commitFrameTarget();
-      if (show_frames)
-        commitText10Target();
-      WAIT_DELAY(delays[curf]);
-      curf += 1;
+      continue;
     }
+  
+    if (show_frames) {
+      setText10Target();
+      clearTarget();
+      drawString((const unsigned char*)format_number(curf), 8, 10);
+    }
+
+    my_wait_vbl();
+   commitFrameTarget();
+    if (show_frames)
+      commitText10Target();
+    //WAIT_DELAY(delays[curf]);
+    curf += 1;
   }
 
   return 0;
