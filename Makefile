@@ -36,7 +36,7 @@ CMOC_URL     := https://github.com/thlg057/retro-toolchain-cache/releases/downlo
 CMOC         := cmoc
 SDK_INC      := -I$(TOOLS_DIR)/include
 SDK_LIB      := $(TOOLS_DIR)/lib/libsdk_mo5.a
-CMOC_FLAGS   := --thommo --org=2600 -Wno-assign-in-condition $(SDK_INC) -I$(INCLUDE_DIR)
+CMOC_FLAGS   := --thommo --org=2600 -Wno-assign-in-condition $(SDK_INC) -D__CMOC__ -I$(INCLUDE_DIR)
 
 FD2SD        := python3 $(TOOLS_DIR)/scripts/fd2sd.py
 PNG2MO5      := python3 $(TOOLS_DIR)/scripts/png2mo5.py

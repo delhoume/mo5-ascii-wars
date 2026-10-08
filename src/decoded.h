@@ -1,4 +1,4 @@
-// Created with image_to_c
+//// Created with image_to_c
 // https://github.com/bitbank2/image_to_c
 //
 // sample8
