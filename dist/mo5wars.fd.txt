@@ -1,0 +1,198 @@
+Thomson .fd disk image: mo5wars.fd
+Image size: 327680 bytes; geometry: 80 tracks x 16 sectors x 256 bytes
+Allocation blocks: 2048 bytes each; 160 blocks total
+File data uses 255 bytes per sector (256 physical bytes per sector)
+Volume name: mo5wars
+Boot sector (track 0, sector 1), first 32 bytes:
+  F0 32 E0 34 7A E0 E1 75 7A 00 69 B7 34 EC FF 72 
+  DD 00 43 DE B9 E1 EE CF D3 42 DD F4 D0 E5 CF DF 
+System areas: boot sector T00/S01; FAT T20/S02; directory T20/S03-S16; blocks 40-41 reserved by fdfs
+
+Allocation table (track 20, sector 2; 160 block entries)
+    0:0(T00:S01-S08)  FAT=FE  reserved
+    1:1(T00:S09-S16)  FAT=FF  free
+    2:2(T01:S01-S08)  FAT=FF  free
+    3:3(T01:S09-S16)  FAT=FF  free
+    4:4(T02:S01-S08)  FAT=FF  free
+    5:5(T02:S09-S16)  FAT=FF  free
+    6:6(T03:S01-S08)  FAT=FF  free
+    7:7(T03:S09-S16)  FAT=FF  free
+    8:8(T04:S01-S08)  FAT=FF  free
+    9:9(T04:S09-S16)  FAT=FF  free
+   10:10(T05:S01-S08)  FAT=FF  free
+   11:11(T05:S09-S16)  FAT=FF  free
+   12:12(T06:S01-S08)  FAT=FF  free
+   13:13(T06:S09-S16)  FAT=FF  free
+   14:14(T07:S01-S08)  FAT=FF  free
+   15:15(T07:S09-S16)  FAT=FF  free
+   16:16(T08:S01-S08)  FAT=FF  free
+   17:17(T08:S09-S16)  FAT=FF  free
+   18:18(T09:S01-S08)  FAT=FF  free
+   19:19(T09:S09-S16)  FAT=FF  free
+   20:20(T10:S01-S08)  FAT=FF  free
+   21:21(T10:S09-S16)  FAT=FF  free
+   22:22(T11:S01-S08)  FAT=FF  free
+   23:23(T11:S09-S16)  FAT=FF  free
+   24:24(T12:S01-S08)  FAT=FF  free
+   25:25(T12:S09-S16)  FAT=FF  free
+   26:26(T13:S01-S08)  FAT=C3  end of file, 3 sector(s) used in final block
+   27:27(T13:S09-S16)  FAT=1A  next block 26
+   28:28(T14:S01-S08)  FAT=1B  next block 27
+   29:29(T14:S09-S16)  FAT=1C  next block 28
+   30:30(T15:S01-S08)  FAT=1D  next block 29
+   31:31(T15:S09-S16)  FAT=1E  next block 30
+   32:32(T16:S01-S08)  FAT=1F  next block 31
+   33:33(T16:S09-S16)  FAT=20  next block 32
+   34:34(T17:S01-S08)  FAT=21  next block 33
+   35:35(T17:S09-S16)  FAT=22  next block 34
+   36:36(T18:S01-S08)  FAT=23  next block 35
+   37:37(T18:S09-S16)  FAT=24  next block 36
+   38:38(T19:S01-S08)  FAT=25  next block 37
+   39:39(T19:S09-S16)  FAT=26  next block 38
+   40:40(T20:S01-S08)  FAT=FE  reserved
+   41:41(T20:S09-S16)  FAT=FE  reserved
+   42:42(T21:S01-S08)  FAT=27  next block 39
+   43:43(T21:S09-S16)  FAT=2A  next block 42
+   44:44(T22:S01-S08)  FAT=2B  next block 43
+   45:45(T22:S09-S16)  FAT=2C  next block 44
+   46:46(T23:S01-S08)  FAT=2D  next block 45
+   47:47(T23:S09-S16)  FAT=2E  next block 46
+   48:48(T24:S01-S08)  FAT=2F  next block 47
+   49:49(T24:S09-S16)  FAT=30  next block 48
+   50:50(T25:S01-S08)  FAT=31  next block 49
+   51:51(T25:S09-S16)  FAT=32  next block 50
+   52:52(T26:S01-S08)  FAT=33  next block 51
+   53:53(T26:S09-S16)  FAT=34  next block 52
+   54:54(T27:S01-S08)  FAT=35  next block 53
+   55:55(T27:S09-S16)  FAT=36  next block 54
+   56:56(T28:S01-S08)  FAT=37  next block 55
+   57:57(T28:S09-S16)  FAT=38  next block 56
+   58:58(T29:S01-S08)  FAT=39  next block 57
+   59:59(T29:S09-S16)  FAT=3A  next block 58
+   60:60(T30:S01-S08)  FAT=3B  next block 59
+   61:61(T30:S09-S16)  FAT=3C  next block 60
+   62:62(T31:S01-S08)  FAT=3D  next block 61
+   63:63(T31:S09-S16)  FAT=3E  next block 62
+   64:64(T32:S01-S08)  FAT=3F  next block 63
+   65:65(T32:S09-S16)  FAT=40  next block 64
+   66:66(T33:S01-S08)  FAT=41  next block 65
+   67:67(T33:S09-S16)  FAT=C3  end of file, 3 sector(s) used in final block
+   68:68(T34:S01-S08)  FAT=43  next block 67
+   69:69(T34:S09-S16)  FAT=44  next block 68
+   70:70(T35:S01-S08)  FAT=45  next block 69
+   71:71(T35:S09-S16)  FAT=46  next block 70
+   72:72(T36:S01-S08)  FAT=47  next block 71
+   73:73(T36:S09-S16)  FAT=48  next block 72
+   74:74(T37:S01-S08)  FAT=49  next block 73
+   75:75(T37:S09-S16)  FAT=4A  next block 74
+   76:76(T38:S01-S08)  FAT=4B  next block 75
+   77:77(T38:S09-S16)  FAT=4C  next block 76
+   78:78(T39:S01-S08)  FAT=4D  next block 77
+   79:79(T39:S09-S16)  FAT=4E  next block 78
+   80:80(T40:S01-S08)  FAT=FF  free
+   81:81(T40:S09-S16)  FAT=FF  free
+   82:82(T41:S01-S08)  FAT=FF  free
+   83:83(T41:S09-S16)  FAT=FF  free
+   84:84(T42:S01-S08)  FAT=FF  free
+   85:85(T42:S09-S16)  FAT=FF  free
+   86:86(T43:S01-S08)  FAT=FF  free
+   87:87(T43:S09-S16)  FAT=FF  free
+   88:88(T44:S01-S08)  FAT=FF  free
+   89:89(T44:S09-S16)  FAT=FF  free
+   90:90(T45:S01-S08)  FAT=FF  free
+   91:91(T45:S09-S16)  FAT=FF  free
+   92:92(T46:S01-S08)  FAT=FF  free
+   93:93(T46:S09-S16)  FAT=FF  free
+   94:94(T47:S01-S08)  FAT=FF  free
+   95:95(T47:S09-S16)  FAT=FF  free
+   96:96(T48:S01-S08)  FAT=FF  free
+   97:97(T48:S09-S16)  FAT=FF  free
+   98:98(T49:S01-S08)  FAT=FF  free
+   99:99(T49:S09-S16)  FAT=FF  free
+  100:100(T50:S01-S08)  FAT=FF  free
+  101:101(T50:S09-S16)  FAT=FF  free
+  102:102(T51:S01-S08)  FAT=FF  free
+  103:103(T51:S09-S16)  FAT=FF  free
+  104:104(T52:S01-S08)  FAT=FF  free
+  105:105(T52:S09-S16)  FAT=FF  free
+  106:106(T53:S01-S08)  FAT=FF  free
+  107:107(T53:S09-S16)  FAT=FF  free
+  108:108(T54:S01-S08)  FAT=FF  free
+  109:109(T54:S09-S16)  FAT=FF  free
+  110:110(T55:S01-S08)  FAT=FF  free
+  111:111(T55:S09-S16)  FAT=FF  free
+  112:112(T56:S01-S08)  FAT=FF  free
+  113:113(T56:S09-S16)  FAT=FF  free
+  114:114(T57:S01-S08)  FAT=FF  free
+  115:115(T57:S09-S16)  FAT=FF  free
+  116:116(T58:S01-S08)  FAT=FF  free
+  117:117(T58:S09-S16)  FAT=FF  free
+  118:118(T59:S01-S08)  FAT=FF  free
+  119:119(T59:S09-S16)  FAT=FF  free
+  120:120(T60:S01-S08)  FAT=FF  free
+  121:121(T60:S09-S16)  FAT=FF  free
+  122:122(T61:S01-S08)  FAT=FF  free
+  123:123(T61:S09-S16)  FAT=FF  free
+  124:124(T62:S01-S08)  FAT=FF  free
+  125:125(T62:S09-S16)  FAT=FF  free
+  126:126(T63:S01-S08)  FAT=FF  free
+  127:127(T63:S09-S16)  FAT=FF  free
+  128:128(T64:S01-S08)  FAT=FF  free
+  129:129(T64:S09-S16)  FAT=FF  free
+  130:130(T65:S01-S08)  FAT=FF  free
+  131:131(T65:S09-S16)  FAT=FF  free
+  132:132(T66:S01-S08)  FAT=FF  free
+  133:133(T66:S09-S16)  FAT=FF  free
+  134:134(T67:S01-S08)  FAT=FF  free
+  135:135(T67:S09-S16)  FAT=FF  free
+  136:136(T68:S01-S08)  FAT=FF  free
+  137:137(T68:S09-S16)  FAT=FF  free
+  138:138(T69:S01-S08)  FAT=FF  free
+  139:139(T69:S09-S16)  FAT=FF  free
+  140:140(T70:S01-S08)  FAT=FF  free
+  141:141(T70:S09-S16)  FAT=FF  free
+  142:142(T71:S01-S08)  FAT=FF  free
+  143:143(T71:S09-S16)  FAT=FF  free
+  144:144(T72:S01-S08)  FAT=FF  free
+  145:145(T72:S09-S16)  FAT=FF  free
+  146:146(T73:S01-S08)  FAT=FF  free
+  147:147(T73:S09-S16)  FAT=FF  free
+  148:148(T74:S01-S08)  FAT=FF  free
+  149:149(T74:S09-S16)  FAT=FF  free
+  150:150(T75:S01-S08)  FAT=FF  free
+  151:151(T75:S09-S16)  FAT=FF  free
+  152:152(T76:S01-S08)  FAT=FF  free
+  153:153(T76:S09-S16)  FAT=FF  free
+  154:154(T77:S01-S08)  FAT=FF  free
+  155:155(T77:S09-S16)  FAT=FF  free
+  156:156(T78:S01-S08)  FAT=FF  free
+  157:157(T78:S09-S16)  FAT=FF  free
+  158:158(T79:S01-S08)  FAT=FF  free
+  159:159(T79:S09-S16)  FAT=FF  free
+  Summary: 105 free, 3 reserved, 50 linked, 2 end-of-file, 0 invalid entries
+
+Directory (track 20, sectors 3-16; 112 slots)
+  Slot   0: MO5WARS.BIN
+    Status: 4D; file type: 2 (machine-code program); data type: 00
+    First block: 79; final-sector byte count: 66
+    Date bytes (day/month/year since 2000): 11/10/2026
+    Comment: (none)
+    Chain: 79(T39:S09-S16) -> 78(T39:S01-S08) -> 77(T38:S09-S16) -> 76(T38:S01-S08) -> 75(T37:S09-S16) -> 74(T37:S01-S08) -> 73(T36:S09-S16) -> 72(T36:S01-S08) -> 71(T35:S09-S16) -> 70(T35:S01-S08) -> 69(T34:S09-S16) -> 68(T34:S01-S08) -> 67(T33:S09-S16)
+    Chain blocks: 13; reported size: 25056 bytes
+    Raw entry:
+      4D 4F 35 57 41 52 53 20 42 49 4E 02 00 4F 00 42 
+      00 20 20 20 20 20 20 20 0B 0A 1A 00 00 00 00 00 
+  Slot   1: ANIM7.RAW
+    Status: 41; file type: 0 (BASIC program); data type: 00
+    First block: 66; final-sector byte count: 125
+    Date bytes (day/month/year since 2000): 11/10/2026
+    Comment: (none)
+    Chain: 66(T33:S01-S08) -> 65(T32:S09-S16) -> 64(T32:S01-S08) -> 63(T31:S09-S16) -> 62(T31:S01-S08) -> 61(T30:S09-S16) -> 60(T30:S01-S08) -> 59(T29:S09-S16) -> 58(T29:S01-S08) -> 57(T28:S09-S16) -> 56(T28:S01-S08) -> 55(T27:S09-S16) -> 54(T27:S01-S08) -> 53(T26:S09-S16) -> 52(T26:S01-S08) -> 51(T25:S09-S16) -> 50(T25:S01-S08) -> 49(T24:S09-S16) -> 48(T24:S01-S08) -> 47(T23:S09-S16) -> 46(T23:S01-S08) -> 45(T22:S09-S16) -> 44(T22:S01-S08) -> 43(T21:S09-S16) -> 42(T21:S01-S08) -> 39(T19:S09-S16) -> 38(T19:S01-S08) -> 37(T18:S09-S16) -> 36(T18:S01-S08) -> 35(T17:S09-S16) -> 34(T17:S01-S08) -> 33(T16:S09-S16) -> 32(T16:S01-S08) -> 31(T15:S09-S16) -> 30(T15:S01-S08) -> 29(T14:S09-S16) -> 28(T14:S01-S08) -> 27(T13:S09-S16) -> 26(T13:S01-S08)
+    Chain blocks: 39; reported size: 78155 bytes
+    Raw entry:
+      41 4E 49 4D 37 20 20 20 52 41 57 00 00 42 00 7D 
+      00 20 20 20 20 20 20 20 0B 0A 1A 00 00 00 00 00 
+  Summary: 2 active, 110 unused, 0 deleted, 0 unrecognized slots
+
+Allocated blocks not reached from an active directory entry:
+  (none)

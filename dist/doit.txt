@@ -1,0 +1,1 @@
+./fdfs -addBL mo5wars.fd BOOTMO.BIN MO5WARS.BIN ANIM7.RAW

@@ -56,8 +56,8 @@ PROJ_HDR     :=
 
 .PHONY: all clean install install-sdk install-bootfd clean-all convert setup-codespace
 
-# Cible par défaut : construit l'image SD
-all: $(DISK_IMAGE_SD)
+# Cible par défaut : construit l'image disquette .fd
+all: $(DISK_IMAGE)
 
 # --- COMPILATION DU PROJET ---
 
